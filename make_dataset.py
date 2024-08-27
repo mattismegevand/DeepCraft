@@ -71,6 +71,7 @@ def process_structures(df, crop_size=32):
     df = df.sort_values(by=['structure_id', 'y', 'x', 'z'])
     grouped = df.groupby('structure')
     structures_blocks = []
+    structures_to_idx = {}
 
     for _, group in tqdm(grouped, desc="Processing structures"):
         max_x, max_y, max_z = group['x'].max(), group['y'].max(), group['z'].max()
@@ -81,8 +82,9 @@ def process_structures(df, crop_size=32):
             x, y, z = int(row['x']), int(row['y']), int(row['z'])
             grid[x, y, z] = row['simplified_mat_id']
         structures_blocks.append(grid)
+        structures_to_idx[group['structure'].iloc[0]] = len(structures_blocks) - 1
 
-    return structures_blocks
+    return structures_blocks, structures_to_idx
 
 def main():
     print("Loading and preprocessing data...")
@@ -92,8 +94,10 @@ def main():
     print("Saving processed data...")
     save_processed_data(df, simplified_mat_to_id)
     print("Processing structures...")
-    structures_blocks = process_structures(df)
+    structures_blocks, structures_to_idx = process_structures(df)
     np.savez_compressed('builds.npz', np.array(structures_blocks))
+    with open('structures_to_idx.json', 'w') as f:
+        json.dump(structures_to_idx, f, indent=2)
     print("Done!")
 
 if __name__ == "__main__":
