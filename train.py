@@ -1,4 +1,5 @@
 import os
+import math
 import json
 import torch
 import torch.nn as nn
@@ -50,7 +51,8 @@ class DeepCraft(nn.Module):
             nn.Flatten()
         )
 
-        self.flatten_size = 256 * 4 * 4 * 4
+        self.post_encoding_size = (256, 4, 4, 4)
+        self.flatten_size = math.prod(self.post_encoding_size)
 
         self.fc_mu = nn.Linear(self.flatten_size, latent_dim)
         self.fc_var = nn.Linear(self.flatten_size, latent_dim)
@@ -79,7 +81,7 @@ class DeepCraft(nn.Module):
 
     def decode(self, z):
         z = self.fc_decoder(z)
-        z = z.view(-1, 256, 6, 6, 6)
+        z = z.view(-1, *self.post_encoding_size)
         return self.decoder(z)
 
     def reparameterize(self, mu, logvar):
