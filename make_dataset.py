@@ -67,16 +67,16 @@ def save_processed_data(df, mat_to_id_mapping):
     with open('mat_to_id_mapping.json', 'w') as f:
         json.dump(mat_to_id_serializable, f, indent=2)
 
-def process_structures(df):
+def process_structures(df, crop_size=32):
     df = df.sort_values(by=['structure_id', 'y', 'x', 'z'])
     grouped = df.groupby('structure')
     structures_blocks = []
 
     for _, group in tqdm(grouped, desc="Processing structures"):
         max_x, max_y, max_z = group['x'].max(), group['y'].max(), group['z'].max()
-        if max_x >= 50 or max_y >= 50 or max_z >= 50:
+        if max_x >= crop_size or max_y >= crop_size or max_z >= crop_size:
             continue
-        grid = np.zeros((50, 50, 50), dtype=np.int16)
+        grid = np.zeros((crop_size, crop_size, crop_size), dtype=np.int16)
         for _, row in group.iterrows():
             x, y, z = int(row['x']), int(row['y']), int(row['z'])
             grid[x, y, z] = row['simplified_mat_id']
@@ -85,11 +85,16 @@ def process_structures(df):
     return structures_blocks
 
 def main():
+    print("Loading and preprocessing data...")
     df = load_and_preprocess_data('minecraft_structures.parquet')
+    print("Creating mappings...")
     df, simplified_mat_to_id = create_mappings(df)
+    print("Saving processed data...")
     save_processed_data(df, simplified_mat_to_id)
+    print("Processing structures...")
     structures_blocks = process_structures(df)
-    np.savez_compressed('builds.npz', *structures_blocks)
+    np.savez_compressed('builds.npz', np.array(structures_blocks))
+    print("Done!")
 
 if __name__ == "__main__":
     main()
