@@ -41,15 +41,14 @@ def visualize_minecraft_build(blocks, ax):
                         color = color_map['default']
 
                     if 'stairs' in material.lower():
-                        # TODO: FIX THIS BULLSHIT
                         if 'east' in material.lower():
                             vertices = np.array([[i, k, j], [i, k+1, j], [i+1, k+1, j+1], [i+1, k, j+1]])
                         elif 'west' in material.lower():
                             vertices = np.array([[i, k, j+1], [i, k+1, j+1], [i+1, k+1, j], [i+1, k, j]])
                         elif 'north' in material.lower():
-                            vertices = np.array([[i, k, j+1], [i, k+1, j+1], [i+1, k, j], [i+1, k+1, j]])
+                            vertices = np.array([[i, k, j+1], [i+1, k, j+1], [i+1, k+1, j], [i, k+1, j]])
                         elif 'south' in material.lower():
-                            vertices = np.array([[i, k+1, j], [i, k, j], [i+1, k, j+1], [i+1, k+1, j+1]])
+                            vertices = np.array([[i, k, j], [i+1, k, j], [i+1, k+1, j+1], [i, k+1, j+1]])
                         else:
                             continue
 
